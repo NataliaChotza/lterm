@@ -3,11 +3,11 @@
 jQuery(document).ready(function($) 
 {
     var id = 1;
-    window.arr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];// Keeps track of different commands(i.e., if they are completed or not)
+    window.arr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];// Keeps track of different commands(i.e., if they are completed or not)
                                     // 0 -> not completed
                                     // 1 -> completed 
                                     // added 1 more position
-    var arr2 = ['echo','pwd','ls','cd','cd ..','cd ~','cat','touch','cp','rm','mkdir','clear','uname','date','ifconfig','tty','history'];
+    var arr2 = ['echo','pwd','ls','cd','cd ..','cd ~','cat','touch','cp','rm','mkdir','clear','uname','date','ifconfig','tty','history','export'];
     //all the newly added commands must be updated in both the above arrays
     var task = ['[[b;#ff3300;]Not Completed]', '[[b;#44D544;]Completed]'];  // To print the task status
     
@@ -25,6 +25,11 @@ jQuery(document).ready(function($)
     s[4] = []; f[4] = [];
     s[5] = []; f[5] = [];
     var index;  //Used in rm command to remove element from an array by using command splice
+    var exported_variables = new Map();
+    exported_variables.set("TMP", "C:\\WINDOWS\\TEMP");
+    exported_variables.set("USERNAME", "SYSTEM");
+    exported_variables.set("Path", "C:\\Program Files\\Java\\bin");
+
 
     $('body').terminal({
         help: function() {
@@ -52,6 +57,7 @@ jQuery(document).ready(function($)
             this.echo('> ifconfig ------- ' + task[arr[14]]);
             this.echo('> tty ------------ ' + task[arr[15]]);
             this.echo('> history -------- ' + task[arr[16]]);
+            this.echo('> export ---------' + task[arr[17]]);
             this.echo('\n');
         },
         echo: function(arg1) {
@@ -354,6 +360,66 @@ jQuery(document).ready(function($)
             this.echo("> I'm [[b;#44D544;]Shubham Rath], a computer science undergrad at IIIT-bh.");
             this.echo("> If you wish to know more then head over to my [[b;#ff3300;]blog: The Roving Cosmonaut] <http://sr6033.github.io/>");
         },
+
+        export :function(){
+            arr[17] = 1;
+            this.echo("> export without arguments prints all previously declared variables\n");
+            this.echo("> Write -p and see what happens");
+
+
+
+            for (let [key, value] of exported_variables) {
+                this.echo(`Decalare -x ${key}="${value}" `);
+            }
+            this.push(function(cmd) {
+                    if(cmd == '-p') {
+                        this.echo(' export -p : Prints all exported variables and functions in the current shell\n');
+                        for (let [key, value] of exported_variables) {
+                            this.echo(`Decalare -x ${key}="${value}" `);
+                        }
+                        this.echo("\n > Now write -f function_name \n");
+                        this.push(function(cmd,term) {
+
+                                if (cmd.toString().includes("-f")) {
+                                    this.echo('> -f function_name is resposible for exporting function');
+
+                                    function_name=cmd.toString().split("-f ")[1];
+                                    if(exported_variables.has(function_name)){
+                                        this.echo("This function name is already exported choose diffirent function name");
+                                    }
+                                    exported_variables.set(function_name, "This is exported function");
+                                    this.echo(">Check if variable got exported (-p)");
+                                } else  if (cmd == "-p") {
+                                    for (let [key, value] of exported_variables) {
+                                        this.echo(`Decalare -x ${key}="${value}" `);
+                                    }
+                                    this.echo("\n > Now write -f function_name or write some variable name\n");
+                                } else if(cmd !="-f" && cmd!="-p"){
+                                    this.echo("> variable name without -f flag is treated as variable\n");
+                                    if(exported_variables.has(cmd)){
+                                        this.echo("Choose diffirent variable name");
+                                    }
+                                    exported_variables.set(cmd, "New exported variable");
+                                    this.echo(">You just exported variable check if its on the list(-p)\n");
+                                }
+
+
+                            }, {
+                                prompt: '[[b;#44D544;]lterm@localhost/:~$] export ',
+                            }
+                        );
+                    }
+                }, {
+                    prompt: '[[b;#44D544;]lterm@localhost/:~$] export ',
+                }
+
+            );
+
+            },
+
+
+
+
     }, {
         
         // DANGER: high
