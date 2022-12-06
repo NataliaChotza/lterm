@@ -364,53 +364,52 @@ jQuery(document).ready(function($)
         export :function(){
             arr[17] = 1;
             this.echo("> export without arguments prints all previously declared variables\n");
-            this.echo("> Write -p and see what happens");
-
-
-
             for (let [key, value] of exported_variables) {
                 this.echo(`Decalare -x ${key}="${value}" `);
             }
+            this.echo("\n> Write export -p and see what happens\n");
+
             this.push(function(cmd) {
-                    if(cmd == '-p') {
+                    if(cmd.toString().includes('-p')) {
                         this.echo(' export -p : Prints all exported variables and functions in the current shell\n');
                         for (let [key, value] of exported_variables) {
                             this.echo(`Decalare -x ${key}="${value}" `);
                         }
-                        this.echo("\n > Now write -f function_name \n");
+                        this.echo("\n > Now write export -f [function_name] \n");
                         this.push(function(cmd,term) {
 
                                 if (cmd.toString().includes("-f")) {
-                                    this.echo('> -f function_name is resposible for exporting function');
+                                    this.echo('>export -f [function_name] is resposible for exporting function');
 
-                                    function_name=cmd.toString().split("-f ")[1];
+                                    function_name=cmd.toString().trim().split("-f")[1];
                                     if(exported_variables.has(function_name)){
                                         this.echo("This function name is already exported choose diffirent function name");
                                     }
                                     exported_variables.set(function_name, "This is exported function");
-                                    this.echo(">Check if variable got exported (-p)");
-                                } else  if (cmd == "-p") {
+                                    this.echo(">Check if variable got exported (export -p)");
+                                } else  if (cmd.toString().includes("-p")) {
                                     for (let [key, value] of exported_variables) {
                                         this.echo(`Decalare -x ${key}="${value}" `);
                                     }
-                                    this.echo("\n > Now write -f function_name or write some variable name\n");
-                                } else if(cmd !="-f" && cmd!="-p"){
+                                    this.echo("\n > Now write export -f function_name or export [name]\n");
+                                } else if(!cmd.toString().includes("-f") && !cmd.toString().includes("-p")){
+                                    var_name =cmd.toString().trim().split("-f")[1];
                                     this.echo("> variable name without -f flag is treated as variable\n");
-                                    if(exported_variables.has(cmd)){
+                                    if(exported_variables.has(var_name)){
                                         this.echo("Choose diffirent variable name");
-                                    }
-                                    exported_variables.set(cmd, "New exported variable");
-                                    this.echo(">You just exported variable check if its on the list(-p)\n");
+                                    }s
+                                    exported_variables.set(var_name, "New exported variable");
+                                    this.echo(">You just exported variable check if its on the list(export -p)\n");
                                 }
 
 
                             }, {
-                                prompt: '[[b;#44D544;]lterm@localhost/:~$] export ',
+                                prompt: '[[b;#44D544;]lterm@localhost/:~$]  ',
                             }
                         );
                     }
                 }, {
-                    prompt: '[[b;#44D544;]lterm@localhost/:~$] export ',
+                    prompt: '[[b;#44D544;]lterm@localhost/:~$] ',
                 }
 
             );
